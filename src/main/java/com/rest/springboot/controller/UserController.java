@@ -1,8 +1,9 @@
 package com.rest.springboot.controller;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,20 +12,22 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.rest.springboot.dao.UserRepository;
 import com.rest.springboot.entity.User;
 
 @RestController
 public class UserController {
-	static Map<Integer, User> users = new HashMap<>();
-
-	static {
-		users.put(1, new User(1, "Anuj", "Male", "Noida"));
-		users.put(2, new User(2, "Kunal", "Male", "Haryana"));
-		users.put(3, new User(3, "Nikil", "Male", "Delhi"));
-		users.put(4, new User(4, "Anmol", "Male", "Gurgaon"));
-		users.put(5, new User(5, "Arjun", "Male", "Noida"));
-
+	
+	@Autowired
+	private UserRepository userRepositary;
+	
+	public UserController(UserRepository userRepositary) {
+		super();
+		this.userRepositary = userRepositary;
 	}
+	
+	
+
 
 	@GetMapping
 	public User greet() {
@@ -34,17 +37,19 @@ public class UserController {
 	}
 
 	@GetMapping("/{id}")
-	public User pathVariable(@PathVariable(name = "id") int id) {
+	public Optional<User> pathVariable(@PathVariable(name = "id") int id) {
 		System.out.println("Usercontroller.pathVariable() :" + id);
 
-		return users.get(id);
+		return userRepositary.findById(id);
 	}
 
 	@GetMapping("/all-users")
-	public Map<Integer, User> getAllUsers() {
+	public List<User> getAllUsers() {
 		System.out.println("Usercontroller.getAllUsers()");
+		
+		return userRepositary.findAll();
 
-		return users;
+		
 	}
 
 	@PostMapping
@@ -52,30 +57,9 @@ public class UserController {
 		System.out.println("Usercontroller.saveUser :");
 		System.out.println(user);
 
-		users.put(user.getId(), user);
+		userRepositary.save(user);
 
 		return user;
 	}  
 	
-	   @PutMapping("/{id}")
-	    public User updateUser(@PathVariable(name = "id")int id,
-	                           @RequestBody User user) {
-
-	        if (users.containsKey(id)) {
-	            user.setId(id);
-	            users.put(id, user);
-	            return user;
-	        }
-
-	        return null;
-	}
-	   @DeleteMapping("/{id}")
-	    public User deleteUser(@PathVariable(name = "id")int id) {
-	                           
-
-	        return users.remove(id);
-	}
-
-		
- 
 }
